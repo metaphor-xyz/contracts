@@ -1,47 +1,13 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 
-contract Approval {
-    enum Status {
-        Submitted,
-        Approved,
-        Denied
-    }
+import "./Approval.sol";
 
-    struct Applicant {
-        address addr;
-        string applicationUri;
-        Status status;
-        string justification;
-    }
-
-    struct Member {
-        address addr;
-        string applicationUri;
-    }
-
-    struct Committee {
-        uint256 id;
-        string infoUri;
-        mapping(address => Applicant) applicants;
-        address[] applicantAddrs;
-        mapping(address => Member) members;
-        address[] memberAddrs;
-        address admittanceRuleset;
-    }
-
-    event applicantApplied();
-    event applicantDenied();
-    event applicantApproved();
-
-    mapping(uint256 => Committee) public committees;
-    uint256[] public committeeIds;
-    uint256 public nextCommitteeId = 0;
-
+contract ApprovalImplementation is Approval {
     function createCommittee(string memory infoJson, address admittanceRuleset)
-        public
+        external override
     {
         // TODO: check that address is a ruleSet contract
 
@@ -60,7 +26,7 @@ contract Approval {
         committeeIds.push(committeeId);
     }
 
-    function listCommittees() public view returns (uint256[] memory) {
+    function listCommittees() public view override returns (uint256[] memory) {
         uint256[] memory localCommitteeIds = committeeIds;
         return localCommitteeIds;
     }
@@ -68,6 +34,7 @@ contract Approval {
     function listApplicants(uint256 committeeId)
         public
         view
+        override
         returns (address[] memory)
     {
         bool isMember = false;
@@ -89,6 +56,7 @@ contract Approval {
     function getApplicant(uint256 committeeId, address applicantAddr)
         public
         view
+        override
         returns (
             string memory,
             Status,
@@ -120,6 +88,7 @@ contract Approval {
     function listMembers(uint256 committeeId)
         public
         view
+        override
         returns (address[] memory)
     {
         bool isMember = false;
@@ -141,6 +110,7 @@ contract Approval {
     function getMember(uint256 committeeId, address memberAddr)
         public
         view
+        override
         returns (string memory)
     {
         bool isMember = false;
@@ -160,7 +130,7 @@ contract Approval {
     }
 
     function upvoteApplicant(uint256 committeeId, address applicantAddr)
-        public
+        external override
     {
         bool isMember = false;
         for (
@@ -203,7 +173,7 @@ contract Approval {
     function applyToCommittee(
         uint256 committeeId,
         string memory applicationJson
-    ) public {
+    ) external override {
         require(
             committees[committeeId].applicants[msg.sender].addr == address(0),
             "Applicant has already applied."

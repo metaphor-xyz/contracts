@@ -5,10 +5,18 @@ async function main() {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
-  const Approval = await ethers.getContractFactory("Approval");
+  const Approval = await ethers.getContractFactory("ApprovalImplementation");
   const approval = await Approval.deploy();
 
+  const UpgradeableBeacon = await ethers.getContractFactory("MetaphorBeacon");
+  const upgradeableBeacon = await UpgradeableBeacon.deploy(approval.address);
+
+  const BeaconProxy = await ethers.getContractFactory("MetaphorProxy");
+  const beaconProxy = await BeaconProxy.deploy(upgradeableBeacon.address, []);
+
+
   console.log("Approval address:", approval.address);
+  console.log("Proxy address:", beaconProxy.address);
 }
 
 main()

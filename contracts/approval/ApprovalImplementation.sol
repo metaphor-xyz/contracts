@@ -6,200 +6,146 @@ import "hardhat/console.sol";
 import "./Approval.sol";
 
 contract ApprovalImplementation is Approval {
-    function createCommittee(string memory infoJson, address admittanceRuleset)
-        external override
+    function createCommittee(address ruleset, string memory metadataURI,
+      address approvalActionAddress, bytes32 approvalActionSelector)
+        external override returns (uint256)
     {
         // TODO: check that address is a ruleSet contract
 
-        // TODO: write infoJson to Ceramic
-        string memory infoUri = infoJson;
-
         uint256 committeeId = nextCommitteeId++;
         Committee storage committee = committees[committeeId];
-        committee.id = committeeId;
-        committee.infoUri = infoUri;
-        committee.admittanceRuleset = admittanceRuleset;
-        committee.memberAddrs.push(msg.sender);
-        Member storage member = committee.members[msg.sender];
-        member.addr = msg.sender;
-        member.applicationUri = "Owner didn't apply!";
-        committeeIds.push(committeeId);
+        committee.owner = msg.sender;
+        committee.ruleset = IRuleset(ruleset);
+        committee.metadataURI = metadataURI;
+        committee.approvalActionAddress = approvalActionAddress;
+        committee.approvalActionSelector = approvalActionSelector;
+
+        return committeeId;
     }
 
-    function listCommittees() public view override returns (uint256[] memory) {
-        uint256[] memory localCommitteeIds = committeeIds;
-        return localCommitteeIds;
-    }
-
-    function listApplicants(uint256 committeeId)
-        public
-        view
-        override
-        returns (address[] memory)
+    function getCommittee(uint256 committeeId) virtual public view override
+      returns (address owner, address ruleset, string memory metadataURI)
     {
-        bool isMember = false;
-        for (
-            uint256 i = 0;
-            i < committees[committeeId].memberAddrs.length;
-            i++
-        ) {
-            if (committees[committeeId].memberAddrs[i] == msg.sender) {
-                isMember = true;
-            }
-        }
-        require(isMember, "Non-members cannot read list of applicants.");
+      Committee storage committee = committees[committeeId];
 
-        address[] memory applicants = committees[committeeId].applicantAddrs;
-        return applicants;
+      return (
+        committee.owner,
+        address(committee.ruleset),
+        committee.metadataURI
+      );
     }
 
-    function getApplicant(uint256 committeeId, address applicantAddr)
+    function getApprovalRequest(uint256 committeeId, uint256 approvalRequestId)
         public
         view
         override
         returns (
-            string memory,
-            Status,
-            string memory
+            address submitter,
+            string memory formSubmissionURI,
+            ApprovalStatus
         )
     {
-        bool isMember = false;
-        for (
-            uint256 i = 0;
-            i < committees[committeeId].memberAddrs.length;
-            i++
-        ) {
-            if (committees[committeeId].memberAddrs[i] == msg.sender) {
-                isMember = true;
-            }
-        }
-        require(isMember, "Non-members cannot read list of applicants.");
-
-        Applicant storage applicant = committees[committeeId].applicants[
-            applicantAddr
+        ApprovalRequest storage request = committees[committeeId].approvalRequests[
+            approvalRequestId
         ];
+
         return (
-            applicant.applicationUri,
-            applicant.status,
-            applicant.justification
+            request.submitter,
+            request.formSubmissionURI,
+            request.status
         );
     }
 
-    function listMembers(uint256 committeeId)
-        public
-        view
-        override
-        returns (address[] memory)
-    {
-        bool isMember = false;
-        for (
-            uint256 i = 0;
-            i < committees[committeeId].memberAddrs.length;
-            i++
-        ) {
-            if (committees[committeeId].memberAddrs[i] == msg.sender) {
-                isMember = true;
-            }
-        }
-        require(isMember, "Non-members cannot read list of applicants.");
-
-        address[] memory members = committees[committeeId].memberAddrs;
-        return members;
-    }
-
-    function getMember(uint256 committeeId, address memberAddr)
-        public
-        view
-        override
-        returns (string memory)
-    {
-        bool isMember = false;
-        for (
-            uint256 i = 0;
-            i < committees[committeeId].memberAddrs.length;
-            i++
-        ) {
-            if (committees[committeeId].memberAddrs[i] == msg.sender) {
-                isMember = true;
-            }
-        }
-        require(isMember, "Non-members cannot read list of applicants.");
-
-        Member storage member = committees[committeeId].members[memberAddr];
-        return member.applicationUri;
-    }
-
-    function upvoteApplicant(uint256 committeeId, address applicantAddr)
-        external override
-    {
-        bool isMember = false;
-        for (
-            uint256 i = 0;
-            i < committees[committeeId].memberAddrs.length;
-            i++
-        ) {
-            if (committees[committeeId].memberAddrs[i] == msg.sender) {
-                isMember = true;
-            }
-        }
-        require(isMember, "Non-members cannot read list of applicants.");
-
-        require(
-            committees[committeeId].applicants[applicantAddr].addr !=
-                address(0),
-            "Applicant has not applied."
-        );
-        require(
-            committees[committeeId].applicants[applicantAddr].status ==
-                Status.Submitted,
-            "Applicant decision has already been made."
-        );
-
-        // TODO: send upvote for applicant to ruleset
-        // for now, any upvote automatically adds a member
-        Applicant storage applicant = committees[committeeId].applicants[
-            applicantAddr
-        ];
-        applicant.status = Status.Approved;
-        applicant.justification = "This person IS super cool!";
-
-        committees[committeeId].members[applicantAddr] = Member({
-            addr: applicantAddr,
-            applicationUri: applicant.applicationUri
-        });
-        committees[committeeId].memberAddrs.push(applicantAddr);
-    }
-
-    function applyToCommittee(
+    function createApprovalRequest(
         uint256 committeeId,
-        string memory applicationJson
-    ) external override {
-        require(
-            committees[committeeId].applicants[msg.sender].addr == address(0),
-            "Applicant has already applied."
-        );
-        require(
-            committees[committeeId].members[msg.sender].addr == address(0),
-            "Applicant is already a member."
-        );
-        require(
-            committees[committeeId].applicants[msg.sender].status !=
-                Status.Denied,
-            "Applicant has already been denied."
-        );
-
-        // TODO: encrypt applicationJson
-        string memory encryptedApplicationJson = applicationJson;
-
-        // TODO: write encryptedApplicationJson to Ceramic
-        string memory applicationUri = encryptedApplicationJson;
-
-        committees[committeeId].applicants[msg.sender] = Applicant({
-            addr: msg.sender,
-            applicationUri: applicationUri,
-            status: Status.Submitted,
-            justification: ""
+        string memory formSubmissionURI
+    ) external override returns (uint256) {
+        Committee storage committee = committees[committeeId];
+        uint256 approvalRequestId = committee.nextApprovalRequestId++;
+        committee.approvalRequests[approvalRequestId] = ApprovalRequest({
+            submitter: msg.sender,
+            formSubmissionURI: formSubmissionURI,
+            status: ApprovalStatus.Submitted
         });
-        committees[committeeId].applicantAddrs.push(msg.sender);
+
+        emit RequestCreated(committeeId, approvalRequestId);
+
+        return approvalRequestId;
     }
+
+    function changeApprovalStatus(uint256 committeeId, uint256 approvalRequestId,
+                                  ApprovalStatus status) virtual external override {
+      Committee storage committee = committees[committeeId];
+      ApprovalRequest storage request = committee.approvalRequests[approvalRequestId];
+
+      require(address(committee.ruleset) == msg.sender,
+              "ApprovalStatus can only be changed by the committee's Ruleset contract");
+
+      request.status = status;
+
+      emit RequestStatusChanged(committeeId, approvalRequestId);
+
+      // If approved and an action is set, perform that action
+      if (status == ApprovalStatus.Approved && committee.approvalActionAddress != address(0)) {
+      }
+    }
+}
+
+contract ApprovalImplementationTest {
+  ApprovalImplementation approval;
+
+  function setUp() public {
+    approval = new ApprovalImplementation();
+  }
+
+  function testSetup() public {
+    require(address(approval) != address(0), "Contract not setup properly");
+  }
+
+  function testCreateEmptyCommittee() public {
+    uint256 committeeId = approval.createCommittee(address(0), "ceramic://dns08fbdfb0", address(0), bytes32(0));
+
+    require(committeeId == 0, "Committee ID should be index 0");
+  }
+
+  function testGetCommittee() public {
+    string memory createMetadataURI = "ceramic://dns08fbdfb0";
+
+    uint256 committeeId = approval.createCommittee(address(0), createMetadataURI, address(0), bytes32(0));
+
+    (address owner, address ruleset, string memory metadataURI) = approval.getCommittee(committeeId);
+
+    require(owner == address(this), "Committee owner should be creator");
+    require(ruleset == address(0), "Ruleset should be unset");
+    require(keccak256(abi.encodePacked(metadataURI)) == keccak256(abi.encodePacked(createMetadataURI)),
+            "Metadata should be the same as on creation");
+  }
+
+  function testCreateApprovalRequest() public {
+    string memory createMetadataURI = "ceramic://dns08fbdfb0";
+    string memory formSubmissionURI = "ceramic://df0dfhhw9";
+
+    uint256 committeeId = approval.createCommittee(address(0), createMetadataURI, address(0), bytes32(0));
+
+    uint256 approvalRequestId = approval.createApprovalRequest(committeeId, formSubmissionURI);
+
+    require (approvalRequestId == 0, "Approval Request ID should be index 0");
+  }
+
+  function testGetApprovalRequest() public {
+    string memory createMetadataURI = "ceramic://dns08fbdfb0";
+    string memory createFormSubmissionURI = "ceramic://df0dfhhw9";
+
+    uint256 committeeId = approval.createCommittee(address(0), createMetadataURI, address(0), bytes32(0));
+
+    uint256 approvalRequestId = approval.createApprovalRequest(committeeId, createFormSubmissionURI);
+
+    (address submitter, string memory formSubmissionURI, ApprovalStatus status) =
+      approval.getApprovalRequest(committeeId, approvalRequestId);
+
+    require(submitter == address(this), "Submitter should be request creator");
+    require(keccak256(abi.encodePacked(formSubmissionURI)) ==
+            keccak256(abi.encodePacked(createFormSubmissionURI)),
+      "Form submission URI should be same as on creation");
+  }
 }

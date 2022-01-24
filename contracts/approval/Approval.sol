@@ -1,59 +1,51 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
+import "./IRuleset.sol";
+
+enum ApprovalStatus {
+    Submitted,
+    Approved,
+    Denied
+}
 
 abstract contract Approval {
-    enum Status {
-        Submitted,
-        Approved,
-        Denied
-    }
-
-    struct Applicant {
-        address addr;
-        string applicationUri;
-        Status status;
-        string justification;
-    }
-
-    struct Member {
-        address addr;
-        string applicationUri;
+    struct ApprovalRequest {
+        ApprovalStatus status;
+        address submitter;
+        string formSubmissionURI;
     }
 
     struct Committee {
-        uint256 id;
-        string infoUri;
-        mapping(address => Applicant) applicants;
-        address[] applicantAddrs;
-        mapping(address => Member) members;
-        address[] memberAddrs;
-        address admittanceRuleset;
+        address owner;
+        mapping(uint256 => ApprovalRequest) approvalRequests;
+        IRuleset ruleset;
+        string metadataURI;
+        uint256 nextApprovalRequestId;
+        // todo(carlos): are we doing this right
+        address approvalActionAddress;
+        bytes32 approvalActionSelector;
     }
 
-    event ApplicantApplied(address applicant, uint256 committeeId);
-    event ApplicantDenied(address applicant, uint256 committeeId);
-    event ApplicantApproved(address applicant, uint256 committeeId);
+    event RequestCreated(uint256 indexed committeeId, uint256 indexed approvalRequestId);
+    event RequestStatusChanged(uint256 indexed committeeId, uint256 indexed approvalRequestId);
 
-    mapping(uint256 => Committee) public committees;
-    uint256[] public committeeIds;
     uint256 public nextCommitteeId = 0;
+    mapping(uint256 => Committee) public committees;
 
-    function createCommittee(string memory infoJson, address admittanceRuleset) virtual external;
+    function createCommittee(address rulesetAddress, string calldata metadataURI, 
+      address approvalActionAddress, bytes32 approvalActionSelector) virtual external returns (uint256 committeeId);
 
-    function listCommittees() virtual public view returns (uint256[] memory);
+    function getCommittee(uint256 committeeId) virtual public view
+      returns (address owner, address ruleset, string memory metadataURI);
 
-    function listApplicants(uint256 committeeId) virtual public view returns (address[] memory);
+    function getApprovalRequest(uint256 committeeId, uint256 approvalRequestId) virtual public view
+      returns (address submitter, string memory formSubmissionURI, ApprovalStatus);
 
-    function getApplicant(uint256 committeeId, address applicantAddr) virtual public view
-      returns (string memory, Status, string memory);
+    function createApprovalRequest(uint256 committeeId, string calldata formSubmissionURI)
+      virtual external returns (uint256 approvalRequestId);
 
-    function listMembers(uint256 committeeId) virtual public view returns (address[] memory);
-
-    function getMember(uint256 committeeId, address memberAddr) virtual public view returns (string memory);
-
-    function upvoteApplicant(uint256 committeeId, address applicantAddr) virtual external;
-
-    function applyToCommittee(uint256 committeeId, string memory applicationJson) virtual external;
+    // todo(carlos): MUST RESTRICT TO ruleset addr
+    function changeApprovalStatus(uint256 committeeId, uint256 approvalRequestId,
+      ApprovalStatus status) virtual external;
 }

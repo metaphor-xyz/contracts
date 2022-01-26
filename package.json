@@ -7,12 +7,15 @@
     "build": "forge build",
     "test": "forge test",
     "lint": "solhint -f table src/**/*.sol",
-    "fmt": "prettier --write src/**/*.sol"
+    "fmt": "prettier --write src/**/*.sol",
+    "prepare": "husky install"
   },
   "keywords": [],
   "author": "Metaphor",
   "license": "ISC",
   "devDependencies": {
+    "husky": "^7.0.4",
+    "lint-staged": "^12.3.2",
     "prettier": "^2.5.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "^3.3.6",

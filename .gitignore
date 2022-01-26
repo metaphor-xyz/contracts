@@ -3,5 +3,3 @@ cache
 artifacts
 yarn-error.log
 
-lib/
-out/

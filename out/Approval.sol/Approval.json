@@ -1,0 +1,248 @@
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "changeStatus",
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "committeeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "approvalRequestId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum ApprovalStatus",
+          "name": "status",
+          "type": "uint8"
+        }
+      ],
+      "outputs": [],
+      "constant": null,
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "committees",
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IRuleset",
+          "name": "ruleset",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "metadataURI",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "nextApprovalRequestId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "approvalActionAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "approvalActionSelector",
+          "type": "bytes32"
+        }
+      ],
+      "constant": null,
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "createApprovalRequest",
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "committeeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "formSubmissionURI",
+          "type": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "approvalRequestId",
+          "type": "uint256"
+        }
+      ],
+      "constant": null,
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "createCommittee",
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "rulesetAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "metadataURI",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "approvalActionAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "approvalActionSelector",
+          "type": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "committeeId",
+          "type": "uint256"
+        }
+      ],
+      "constant": null,
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "getApprovalRequest",
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "committeeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "approvalRequestId",
+          "type": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "submitter",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "formSubmissionURI",
+          "type": "string"
+        },
+        {
+          "internalType": "enum ApprovalStatus",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "constant": null,
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getCommittee",
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "committeeId",
+          "type": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "ruleset",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "metadataURI",
+          "type": "string"
+        }
+      ],
+      "constant": null,
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "nextCommitteeId",
+      "inputs": [],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "constant": null,
+      "stateMutability": "view"
+    },
+    {
+      "type": "event",
+      "name": "RequestCreated",
+      "inputs": [
+        {
+          "name": "committeeId",
+          "type": "uint256",
+          "indexed": true
+        },
+        {
+          "name": "approvalRequestId",
+          "type": "uint256",
+          "indexed": true
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RequestStatusChanged",
+      "inputs": [
+        {
+          "name": "committeeId",
+          "type": "uint256",
+          "indexed": true
+        },
+        {
+          "name": "approvalRequestId",
+          "type": "uint256",
+          "indexed": true
+        }
+      ],
+      "anonymous": false
+    }
+  ],
+  "bin": "0x",
+  "bin-runtime": "0x"
+}

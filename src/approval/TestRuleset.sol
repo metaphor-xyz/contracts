@@ -15,9 +15,9 @@ contract TestRuleset is IRuleset, Ownable {
     }
 
     function getMembers() external view returns (address[] memory members) {
-        address[] memory members = address[](0);
+        address[] memory empty = new address[](0);
 
-        return members;
+        return empty;
     }
 
     function getName() external view returns (string memory) {

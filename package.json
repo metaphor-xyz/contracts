@@ -6,8 +6,8 @@
   "scripts": {
     "build": "forge build",
     "test": "forge test",
-    "lint": "solhint -f table src/**/*.sol",
-    "fmt": "prettier --write src/**/*.sol",
+    "lint": "solhint 'src/**/*.sol'",
+    "fmt": "prettier --write 'src/**/*.sol'",
     "prepare": "husky install"
   },
   "keywords": [],

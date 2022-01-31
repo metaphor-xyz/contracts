@@ -1,21 +1,56 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "./Approval.sol";
+enum ApprovalStatus {
+    Submitted,
+    Approved,
+    Denied
+}
 
-contract ApprovalImplementation is Approval {
+error Unauthorized();
+
+contract CommitteeManager {
+    struct ApprovalRequest {
+        ApprovalStatus status;
+        address submitter;
+        string formSubmissionURI;
+    }
+
+    struct Committee {
+        address owner;
+        address approver;
+        mapping(uint256 => ApprovalRequest) approvalRequests;
+        string metadataURI;
+        uint256 nextApprovalRequestId;
+        // todo(carlos): are we doing this right
+        address approvalActionAddress;
+        bytes32 approvalActionSelector;
+    }
+
+    event RequestCreated(
+        uint256 indexed committeeId,
+        uint256 indexed approvalRequestId
+    );
+    event RequestStatusChanged(
+        uint256 indexed committeeId,
+        uint256 indexed approvalRequestId
+    );
+
+    uint256 public nextCommitteeId = 0;
+    mapping(uint256 => Committee) public committees;
+
     function createCommittee(
-        address ruleset,
+        address approver,
         string memory metadataURI,
         address approvalActionAddress,
         bytes32 approvalActionSelector
-    ) external override returns (uint256) {
+    ) external returns (uint256) {
         // TODO: check that address is a ruleSet contract
 
         uint256 committeeId = nextCommitteeId++;
         Committee storage committee = committees[committeeId];
         committee.owner = msg.sender;
-        committee.ruleset = IRuleset(ruleset);
+        committee.approver = approver;
         committee.metadataURI = metadataURI;
         committee.approvalActionAddress = approvalActionAddress;
         committee.approvalActionSelector = approvalActionSelector;
@@ -27,10 +62,9 @@ contract ApprovalImplementation is Approval {
         public
         view
         virtual
-        override
         returns (
             address owner,
-            address ruleset,
+            address approver,
             string memory metadataURI
         )
     {
@@ -38,7 +72,7 @@ contract ApprovalImplementation is Approval {
 
         return (
             committee.owner,
-            address(committee.ruleset),
+            address(committee.approver),
             committee.metadataURI
         );
     }
@@ -46,7 +80,6 @@ contract ApprovalImplementation is Approval {
     function getApprovalRequest(uint256 committeeId, uint256 approvalRequestId)
         public
         view
-        override
         returns (
             address submitter,
             string memory formSubmissionURI,
@@ -62,7 +95,7 @@ contract ApprovalImplementation is Approval {
     function createApprovalRequest(
         uint256 committeeId,
         string memory formSubmissionURI
-    ) external override returns (uint256) {
+    ) external returns (uint256) {
         Committee storage committee = committees[committeeId];
         uint256 approvalRequestId = committee.nextApprovalRequestId++;
         committee.approvalRequests[approvalRequestId] = ApprovalRequest({
@@ -80,16 +113,15 @@ contract ApprovalImplementation is Approval {
         uint256 committeeId,
         uint256 approvalRequestId,
         ApprovalStatus status
-    ) external virtual override {
+    ) external virtual {
         Committee storage committee = committees[committeeId];
         ApprovalRequest storage request = committee.approvalRequests[
             approvalRequestId
         ];
 
-        require(
-            address(committee.ruleset) == msg.sender,
-            "Not committee controller"
-        );
+        if (address(committee.approver) != msg.sender) {
+            revert Unauthorized();
+        }
 
         request.status = status;
 

@@ -8,6 +8,7 @@
     "test": "forge test",
     "lint": "solhint 'src/**/*.sol'",
     "fmt": "prettier --write 'src/**/*.sol'",
+    "fmt:output": "node formatAbi.js",
     "prepare": "husky install"
   },
   "keywords": [],

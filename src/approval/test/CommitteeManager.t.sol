@@ -7,7 +7,7 @@ import "ds-test/test.sol";
 import "../CommitteeManager.sol";
 import "../TestRuleset.sol";
 
-contract ApprovalTest is DSTest {
+contract CommitteeManagerTest is DSTest {
     CommitteeManager private manager;
     TestRuleset private testRuleset;
 
@@ -40,6 +40,24 @@ contract ApprovalTest is DSTest {
         );
 
         require(committeeId == 0, "Committee ID should be index 0");
+    }
+
+    function testChangeApprover() public {
+        TestRuleset newRuleset = new TestRuleset(manager);
+
+        uint256 committeeId = manager.createCommittee(
+            address(testRuleset),
+            "ceramic://dns08fbdfb0",
+            address(0),
+            bytes32(0)
+        );
+
+        manager.changeApprover(committeeId, address(newRuleset));
+
+        (address owner, address ruleset, string memory metadataURI) = manager
+            .getCommittee(committeeId);
+
+        require(ruleset == address(newRuleset), "Approver not updated");
     }
 
     function testGetCommittee() public {

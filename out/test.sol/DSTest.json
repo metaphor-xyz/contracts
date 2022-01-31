@@ -11,7 +11,6 @@
           "type": "bool"
         }
       ],
-      "constant": null,
       "stateMutability": "view"
     },
     {
@@ -25,7 +24,6 @@
           "type": "bool"
         }
       ],
-      "constant": null,
       "stateMutability": "view"
     },
     {

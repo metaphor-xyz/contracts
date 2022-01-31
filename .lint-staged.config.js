@@ -1,3 +1,3 @@
 module.exports = {
-  'src/**/*.{sol}': ['yarn fmt', 'yarn lint'],
+  'src/**/*.sol': ['yarn fmt', 'yarn lint'],
 };

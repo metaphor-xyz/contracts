@@ -27,6 +27,8 @@ contract CommitteeManager {
         bytes32 approvalActionSelector;
     }
 
+    event CommitteeCreated(uint256 indexed committeeId);
+    event CommitteeUpdated(uint256 indexed committeeId);
     event RequestCreated(
         uint256 indexed committeeId,
         uint256 indexed approvalRequestId
@@ -45,8 +47,6 @@ contract CommitteeManager {
         address approvalActionAddress,
         bytes32 approvalActionSelector
     ) external returns (uint256) {
-        // TODO: check that address is a ruleSet contract
-
         uint256 committeeId = nextCommitteeId++;
         Committee storage committee = committees[committeeId];
         committee.owner = msg.sender;
@@ -55,7 +55,21 @@ contract CommitteeManager {
         committee.approvalActionAddress = approvalActionAddress;
         committee.approvalActionSelector = approvalActionSelector;
 
+        emit CommitteeCreated(committeeId);
+
         return committeeId;
+    }
+
+    function changeApprover(uint256 committeeId, address approver) external {
+        Committee storage committee = committees[committeeId];
+
+        if (committee.owner != msg.sender) {
+            revert Unauthorized();
+        }
+
+        committee.approver = approver;
+
+        emit CommitteeCreated(committeeId);
     }
 
     function getCommittee(uint256 committeeId)

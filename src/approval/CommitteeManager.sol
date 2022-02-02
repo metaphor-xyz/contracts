@@ -48,12 +48,12 @@ contract CommitteeManager {
         bytes32 approvalActionSelector
     ) external returns (uint256) {
         uint256 committeeId = nextCommitteeId++;
-        Committee storage committee = committees[committeeId];
-        committee.owner = msg.sender;
-        committee.approver = approver;
-        committee.metadataURI = metadataURI;
-        committee.approvalActionAddress = approvalActionAddress;
-        committee.approvalActionSelector = approvalActionSelector;
+        Committee storage _committee = committees[committeeId];
+        _committee.owner = msg.sender;
+        _committee.approver = approver;
+        _committee.metadataURI = metadataURI;
+        _committee.approvalActionAddress = approvalActionAddress;
+        _committee.approvalActionSelector = approvalActionSelector;
 
         emit CommitteeCreated(committeeId);
 
@@ -61,18 +61,18 @@ contract CommitteeManager {
     }
 
     function changeApprover(uint256 committeeId, address approver) external {
-        Committee storage committee = committees[committeeId];
+        Committee storage _committee = committees[committeeId];
 
-        if (committee.owner != msg.sender) {
+        if (_committee.owner != msg.sender) {
             revert Unauthorized();
         }
 
-        committee.approver = approver;
+        _committee.approver = approver;
 
         emit CommitteeCreated(committeeId);
     }
 
-    function getCommittee(uint256 committeeId)
+    function committee(uint256 committeeId)
         public
         view
         virtual
@@ -82,16 +82,16 @@ contract CommitteeManager {
             string memory metadataURI
         )
     {
-        Committee storage committee = committees[committeeId];
+        Committee storage _committee = committees[committeeId];
 
         return (
-            committee.owner,
-            address(committee.approver),
-            committee.metadataURI
+            _committee.owner,
+            address(_committee.approver),
+            _committee.metadataURI
         );
     }
 
-    function getApprovalRequest(uint256 committeeId, uint256 approvalRequestId)
+    function request(uint256 committeeId, uint256 approvalRequestId)
         public
         view
         returns (
@@ -100,19 +100,23 @@ contract CommitteeManager {
             ApprovalStatus
         )
     {
-        ApprovalRequest storage request = committees[committeeId]
+        ApprovalRequest storage _request = committees[committeeId]
             .approvalRequests[approvalRequestId];
 
-        return (request.submitter, request.formSubmissionURI, request.status);
+        return (
+            _request.submitter,
+            _request.formSubmissionURI,
+            _request.status
+        );
     }
 
     function createApprovalRequest(
         uint256 committeeId,
         string memory formSubmissionURI
     ) external returns (uint256) {
-        Committee storage committee = committees[committeeId];
-        uint256 approvalRequestId = committee.nextApprovalRequestId++;
-        committee.approvalRequests[approvalRequestId] = ApprovalRequest({
+        Committee storage _committee = committees[committeeId];
+        uint256 approvalRequestId = _committee.nextApprovalRequestId++;
+        _committee.approvalRequests[approvalRequestId] = ApprovalRequest({
             submitter: msg.sender,
             formSubmissionURI: formSubmissionURI,
             status: ApprovalStatus.Submitted
@@ -128,23 +132,23 @@ contract CommitteeManager {
         uint256 approvalRequestId,
         ApprovalStatus status
     ) external virtual {
-        Committee storage committee = committees[committeeId];
-        ApprovalRequest storage request = committee.approvalRequests[
+        Committee storage _committee = committees[committeeId];
+        ApprovalRequest storage _request = _committee.approvalRequests[
             approvalRequestId
         ];
 
-        if (address(committee.approver) != msg.sender) {
+        if (address(_committee.approver) != msg.sender) {
             revert Unauthorized();
         }
 
-        request.status = status;
+        _request.status = status;
 
         emit RequestStatusChanged(committeeId, approvalRequestId);
 
         // If approved and an action is set, perform that action
         // if (
         //     status == ApprovalStatus.Approved &&
-        //     committee.approvalActionAddress != address(0)
+        //     _committee.approvalActionAddress != address(0)
         // ) {}
     }
 }

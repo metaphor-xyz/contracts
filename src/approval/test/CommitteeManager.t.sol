@@ -55,7 +55,7 @@ contract CommitteeManagerTest is DSTest {
         manager.changeApprover(committeeId, address(newRuleset));
 
         (address owner, address ruleset, string memory metadataURI) = manager
-            .getCommittee(committeeId);
+            .committee(committeeId);
 
         require(ruleset == address(newRuleset), "Approver not updated");
     }
@@ -71,7 +71,7 @@ contract CommitteeManagerTest is DSTest {
         );
 
         (address owner, address ruleset, string memory metadataURI) = manager
-            .getCommittee(committeeId);
+            .committee(committeeId);
 
         require(owner == address(this), "Committee owner should be creator");
         require(
@@ -127,7 +127,7 @@ contract CommitteeManagerTest is DSTest {
             address submitter,
             string memory formSubmissionURI,
             ApprovalStatus status
-        ) = manager.getApprovalRequest(committeeId, approvalRequestId);
+        ) = manager.request(committeeId, approvalRequestId);
 
         require(
             submitter == address(this),
@@ -162,7 +162,7 @@ contract CommitteeManagerTest is DSTest {
             address submitter,
             string memory formSubmissionURI,
             ApprovalStatus status
-        ) = manager.getApprovalRequest(committeeId, approvalRequestId);
+        ) = manager.request(committeeId, approvalRequestId);
 
         require(
             status == ApprovalStatus.Approved,

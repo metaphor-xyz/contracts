@@ -1,0 +1,19 @@
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "implementation",
+      "inputs": [],
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view"
+    }
+  ],
+  "bin": "0x",
+  "bin-runtime": "0x"
+}

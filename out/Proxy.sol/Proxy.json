@@ -1,0 +1,12 @@
+{
+  "abi": [
+    {
+      "type": "receive"
+    },
+    {
+      "type": "fallback"
+    }
+  ],
+  "bin": "0x",
+  "bin-runtime": "0x"
+}

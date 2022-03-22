@@ -24,8 +24,7 @@ contract CommitteeManagerTest is DSTest {
         uint256 committeeId = manager.createCommittee(
             address(0),
             "ceramic://dns08fbdfb0",
-            address(0),
-            bytes32(0)
+            address(0)
         );
 
         require(committeeId == 0, "Committee ID should be index 0");
@@ -35,8 +34,7 @@ contract CommitteeManagerTest is DSTest {
         uint256 committeeId = manager.createCommittee(
             address(testRuleset),
             "ceramic://dns08fbdfb0",
-            address(0),
-            bytes32(0)
+            address(0)
         );
 
         require(committeeId == 0, "Committee ID should be index 0");
@@ -48,8 +46,7 @@ contract CommitteeManagerTest is DSTest {
         uint256 committeeId = manager.createCommittee(
             address(testRuleset),
             "ceramic://dns08fbdfb0",
-            address(0),
-            bytes32(0)
+            address(0)
         );
 
         manager.changeApprover(committeeId, address(newRuleset));
@@ -66,8 +63,7 @@ contract CommitteeManagerTest is DSTest {
         uint256 committeeId = manager.createCommittee(
             address(testRuleset),
             createMetadataURI,
-            address(0),
-            bytes32(0)
+            address(0)
         );
 
         (address owner, address ruleset, string memory metadataURI) = manager
@@ -92,8 +88,7 @@ contract CommitteeManagerTest is DSTest {
         uint256 committeeId = manager.createCommittee(
             address(testRuleset),
             createMetadataURI,
-            address(0),
-            bytes32(0)
+            address(0)
         );
 
         uint256 approvalRequestId = manager.createApprovalRequest(
@@ -114,8 +109,7 @@ contract CommitteeManagerTest is DSTest {
         uint256 committeeId = manager.createCommittee(
             address(testRuleset),
             createMetadataURI,
-            address(0),
-            bytes32(0)
+            address(0)
         );
 
         uint256 approvalRequestId = manager.createApprovalRequest(
@@ -147,8 +141,7 @@ contract CommitteeManagerTest is DSTest {
         uint256 committeeId = manager.createCommittee(
             address(testRuleset),
             createMetadataURI,
-            address(0),
-            bytes32(0)
+            address(0)
         );
 
         uint256 approvalRequestId = manager.createApprovalRequest(

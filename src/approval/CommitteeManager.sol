@@ -9,6 +9,10 @@ enum ApprovalStatus {
 
 error Unauthorized();
 
+interface IApprovalAction {
+    function onApproval(uint256 committeeId, uint256 requestId) external;
+}
+
 contract CommitteeManager {
     struct ApprovalRequest {
         ApprovalStatus status;
@@ -22,9 +26,7 @@ contract CommitteeManager {
         mapping(uint256 => ApprovalRequest) approvalRequests;
         string metadataURI;
         uint256 nextApprovalRequestId;
-        // todo(carlos): are we doing this right
-        address approvalActionAddress;
-        bytes32 approvalActionSelector;
+        IApprovalAction approvalAction;
     }
 
     event CommitteeCreated(uint256 indexed committeeId);
@@ -44,16 +46,14 @@ contract CommitteeManager {
     function createCommittee(
         address approver,
         string memory metadataURI,
-        address approvalActionAddress,
-        bytes32 approvalActionSelector
+        address approvalAction
     ) external returns (uint256) {
         uint256 committeeId = nextCommitteeId++;
         Committee storage _committee = committees[committeeId];
         _committee.owner = msg.sender;
         _committee.approver = approver;
         _committee.metadataURI = metadataURI;
-        _committee.approvalActionAddress = approvalActionAddress;
-        _committee.approvalActionSelector = approvalActionSelector;
+        _committee.approvalAction = IApprovalAction(approvalAction);
 
         emit CommitteeCreated(committeeId);
 
@@ -131,7 +131,7 @@ contract CommitteeManager {
         uint256 committeeId,
         uint256 approvalRequestId,
         ApprovalStatus status
-    ) external virtual {
+    ) external {
         Committee storage _committee = committees[committeeId];
         ApprovalRequest storage _request = _committee.approvalRequests[
             approvalRequestId
@@ -146,9 +146,14 @@ contract CommitteeManager {
         emit RequestStatusChanged(committeeId, approvalRequestId);
 
         // If approved and an action is set, perform that action
-        // if (
-        //     status == ApprovalStatus.Approved &&
-        //     _committee.approvalActionAddress != address(0)
-        // ) {}
+        if (
+            status == ApprovalStatus.Approved &&
+            address(_committee.approvalAction) != address(0)
+        ) {
+            _committee.approvalAction.onApproval(
+                committeeId,
+                approvalRequestId
+            );
+        }
     }
 }
